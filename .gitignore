@@ -1,0 +1,6 @@
+paddle
+processed
+*.tar.gz
+*.pyc
+*.txt
+*.xlsx
