@@ -49,6 +49,7 @@ def load_data(data_file, data_info):
 
 
 def norm_categorical_feature(samples, i, for_test):
+    print("fea %d" % i)
     word_dict = {}
     if not for_test:
         feature_dict = defaultdict(int)
@@ -114,13 +115,13 @@ def process_dir(src, for_test=False):
         process_file(os.path.join(src, file_name), for_test)
 
 
-def process_file(in_name, for_test=False):
+def process_file(in_name, for_test):
     name = os.path.splitext(os.path.split(in_name)[1])[0]
 
     data_info = load_data_info("train_info.txt")
     samples = load_data(in_name, data_info)
 
-    normalized = norm_feature(samples, for_test=False)
+    normalized = norm_feature(samples, for_test)
 
     with open("%s_normalized_dev.txt" % (name), "w") as fout:
         for sample in samples:
@@ -140,7 +141,7 @@ def make_pairs(data_file, save_name):
 
 
 if __name__ == "__main__":
-    # process_file("exported/top_400.txt", for_test=True)
+    process_file("exported/top_400.txt", for_test=True)
     process_file("exported/19000data.txt", for_test=True)
 
     # make_pairs("1_normalized_dev.txt", "pairs_train.txt")

@@ -3,12 +3,17 @@ import os
 import sys
 import gzip
 import pdb
+import math
 import numpy as np
 from openpyxl import Workbook
 
 import paddle.v2 as paddle
 import reader
 from network import half_ranknet
+
+
+def norm_score(x):
+    return int(1. / (1 + math.exp(-x)) * 1000)
 
 
 def get_file_name(file_path):
@@ -30,15 +35,19 @@ def gen_report(predictions, raw_file, data_info):
 
     idx = 1
     res_sheet["A%d" % idx] = u"分值"
+    res_sheet["B%d" % idx] = u"来源"
+
     titles = open(data_info, "r").readlines()
     for i, title in enumerate(titles):
-        res_sheet["%s%d" % (chr(ord("B") + i), idx)] = title.split(",")[0]
+        res_sheet["%s%d" % (chr(ord("C") + i), idx)] = title.split(",")[0]
 
     idx += 1
     for p in predictions:
         res_sheet["A%d" % (idx)] = "%f" % (p[0][0])
+        res_sheet["B%d" % (idx)] = u"起点"
+
         for i, context in enumerate(raw_sample[p[1]].split("\t")):
-            res_sheet["%s%d" % (chr(ord("B") + i), idx)] = context
+            res_sheet["%s%d" % (chr(ord("C") + i), idx)] = context
         idx += 1
 
     res_file.save(fn + "_scores.xlsx")
@@ -47,7 +56,7 @@ def gen_report(predictions, raw_file, data_info):
 def infer(model_path, test_data, batch_size):
     assert os.path.exists(model_path), "The trained model does not exist."
     # feature_dim = 18
-    feature_dim = 8
+    feature_dim = 7
 
     parameters = paddle.parameters.Parameters.from_tar(gzip.open(model_path))
     inferer = paddle.inference.Inference(
@@ -75,11 +84,14 @@ if __name__ == '__main__':
     # infer("models/ranknet_params_25.tar.gz",
     #       "../preprocess/processed/train_test/test_normed.txt", 16)
 
-    raw_file = (
-        "/Users/ying/Documents/codes/rank_ip/preprocess/data/12_07/exported/"
-        "all_data.txt")
-    proc_file = ("/Users/ying/Documents/codes/rank_ip/preprocess/data/12_07/"
-                 "all_data.txt")
+    # raw_file = "../preprocess/data/12_07/exported/all_data.txt"
+    # proc_file = "../preprocess/data/12_07/all_data.txt"
+    # data_info = "../preprocess/data/12_07/train_info.txt"
+
+    # proc_file = ("../preprocess/data/12_14/"
+    #             "qidian_add_missing_fea_normalized_dev.txt")
+    # raw_file = ("../preprocess/data/12_14/raw/qidian_add_missing_fea.txt")
+    # data_info = "../preprocess/data/12_14/train_info.txt"
 
     # proc_file = ("/Users/ying/Documents/codes/rank_ip/preprocess/data/12_07/"
     #              "top_400_normalized_dev.txt")
@@ -91,10 +103,8 @@ if __name__ == '__main__':
     # raw_file = ("/Users/ying/Documents/codes/rank_ip/preprocess/"
     #             "data/12_07/exported/19000data.txt")
 
-    data_info = "../preprocess/data/12_07/train_info.txt"
-
     # predictions = infer(
     #     "trained_models/11_28/models/ranknet_params_3800.tar.gz", proc_file, 1)
-    predictions = infer(
-        "trained_models/11_28/models/ranknet_params_7200.tar.gz", proc_file, 1)
-    gen_report(predictions, raw_file, data_info)
+    # predictions = infer(
+    #     "trained_models/11_28/models/ranknet_params_7200.tar.gz", proc_file, 1)
+    # gen_report(predictions, raw_file, data_info)
