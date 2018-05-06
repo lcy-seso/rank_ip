@@ -35,8 +35,19 @@ def test_reader(data_path):
         with open(data_path, "r") as f:
             for line in f:
                 feat = line.strip().split("\t")
-                # yield map(float, feat[1:]), feat[0], feat[-1]
-                yield map(float, feat[1:]), feat[0]
+                yield map(float, feat)
+
+    return reader
+
+
+def test_reader_0506(data_dir):
+    def reader():
+        for file_name in os.listdir(data_dir):
+            file_path = os.path.join(data_dir, file_path)
+            with open(data_path, "r") as f:
+                for line in f:
+                    feat = line.strip().split("\t")
+                    yield map(float, feat)
 
     return reader
 

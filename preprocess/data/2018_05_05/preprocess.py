@@ -37,7 +37,7 @@ def format_chuangshizhongwen(data_path, save_dir):
             line_split = line.strip().split("\t")
 
             signed = "否"
-            if "".join(line_split[3].split()) == "签约作品":
+            if "".join(line_split[3].split()) in ["签约作品", "创世首发"]:
                 signed = "是"
 
             fout.write("%s\t%s\t%s\t%s\t%.2f\t%.2f\t%.2f\n" % (
@@ -319,11 +319,13 @@ def make_pairs(in_dir, save_path, sampling_thd=0.8):
 
 if __name__ == "__main__":
     # to_utf8("raw_data")
-    # build_dict()
 
-    # prepare_train(
-    #     in_dir="processed/formated",
-    #     out_dir="processed/final",
-    #     dict_dir="processed/info")
+    format_raw()
+    build_dict()
+
+    prepare_train(
+        in_dir="processed/formated",
+        out_dir="processed/final",
+        dict_dir="processed/info")
 
     make_pairs(in_dir="processed/final", save_path="processed/train.txt")

@@ -52,12 +52,6 @@ def train_ranknet(num_passes, save_dir):
             if event.batch_id % 1000 == 0:
                 logger.info("Pass %d Batch %d Cost %.9f" %
                             (event.pass_id, event.batch_id, event.cost))
-                with gzip.open(
-                        os.path.join(
-                            save_dir,
-                            "ranknet_params_pass_%02d_batch_%05d.tar.gz" %
-                            (event.pass_id, event.batch_id)), "w") as f:
-                    trainer.save_parameter_to_tar(f)
 
         if isinstance(event, paddle.event.EndPass):
             with gzip.open(

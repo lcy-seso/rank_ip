@@ -13,7 +13,7 @@ from network import half_ranknet_12_24
 
 
 def norm_score(x):
-    return int(1. / (1 + math.exp(-x)) * 1000)
+    return float(1. / (1 + math.exp(-x)) * 100)
 
 
 def get_file_name(file_path):
@@ -27,7 +27,6 @@ def infer(model_path,
           data_info=("/Users/ying/Documents/codes/"
                      "rank_ip/preprocess/data/12_24/data_info.txt")):
     assert os.path.exists(model_path), "The trained model does not exist."
-    # feature_dim = 18
     feature_dim = 7
 
     parameters = paddle.parameters.Parameters.from_tar(gzip.open(model_path))
@@ -59,7 +58,13 @@ def infer(model_path,
         idx = 1
         res_sheet["A%d" % idx] = u"分值"
 
-        titles = open(data_info, "r").readlines()
+        if i > 5:
+            title = open(("/Users/ying/Documents/codes/rank_ip/"
+                          "preprocess/data/12_26/data_info.txt"),
+                         "r").readlines()
+        else:
+            titles = open(data_info, "r").readlines()
+
         for t, title in enumerate(titles):
             res_sheet["%s%d" % (chr(ord("B") + t), idx)] = title.split(",")[0]
 
@@ -83,7 +88,7 @@ def infer(model_path,
         idx = 2
         for p in predictions:
             score = norm_score(p[0][0])
-            res_sheet["A%d" % (idx)] = "%d" % (score)
+            res_sheet["A%d" % (idx)] = "%.2f" % (score)
 
             for j, context in enumerate(raw_sample[p[1]].split("\t")):
                 res_sheet["%s%d" % (chr(ord("B") + j), idx)] = context
@@ -101,19 +106,27 @@ def infer(model_path,
     for t, title in enumerate(titles):
         res_sheet["%s%d" % (chr(ord("C") + t), idx)] = title.split(",")[0]
 
+    sample_set = set()
+    count = 0
     for i, sample in enumerate(all_samples):
-        res_sheet["A%d" % (i + 2)] = "%d" % sample[1]
-        res_sheet["B%d" % (i + 2)] = sample[0].decode("utf-8")
+        title = sample[2].split("\t")[0]
+        if title in sample_set: continue
+        res_sheet["A%d" % (count + 2)] = "%.2f" % sample[1]
+        sample_set.add(title)
+        res_sheet["B%d" % (count + 2)] = sample[0].decode("utf-8")
         for j, context in enumerate(sample[2].split("\t")):
-            res_sheet["%s%d" % (chr(ord("C") + j), i + 2)] = context
+            res_sheet["%s%d" % (chr(ord("C") + j), count + 2)] = context
+        count += 1
 
-    res_file.save("12_24_scores.xlsx")
+    res_file.save("12_26_scores.xlsx")
 
 
 if __name__ == '__main__':
-    model_path = "models_12_24/ranknet_params_000040.tar.gz"
+    # model_path = "models_12_24/ranknet_params_000040.tar.gz"
+    model_path = "models_12_26/ranknet_params_000050.tar.gz"
     test_dir = "test_data"
-    raw_data_dir = "exported"
+    raw_data_dir = ("/Users/ying/Documents/codes/rank_ip/preprocess/"
+                    "data/12_26/data_for_report")
 
     paddle.init(use_gpu=False, trainer_count=1)
     infer(model_path, test_dir, raw_data_dir, 1)
